@@ -1,26 +1,30 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { getByPath } from './jsonPath';
 import { getLocaleIndex, LanguageBundle } from './localeIndex';
-import { resolveKeyAtPosition } from './keyResolver';
+import { I18nBucket, resolveKeyAtPosition } from './keyResolver';
+import { getThemeLanguages } from './settingsSchema';
 import { findThemeRoot } from './themeRoot';
 
-function sortLanguages(
-  languages: LanguageBundle[],
+function localeFileUri(
+  themeRoot: string,
+  localesPath: string,
+  lang: string,
+  bucket: I18nBucket
+): vscode.Uri {
+  const filename =
+    bucket === 'schema' ? `${lang}.schema.json` : `${lang}.json`;
+  return vscode.Uri.file(path.join(themeRoot, localesPath, filename));
+}
+
+function languagesInSchemaOrder(
+  bundles: LanguageBundle[],
   order: string[]
 ): LanguageBundle[] {
-  if (!order.length) {
-    return languages;
-  }
-
-  const rank = new Map(order.map((lang, index) => [lang, index]));
-  return [...languages].sort((a, b) => {
-    const ra = rank.get(a.lang) ?? 999;
-    const rb = rank.get(b.lang) ?? 999;
-    if (ra !== rb) {
-      return ra - rb;
-    }
-    return a.lang.localeCompare(b.lang);
-  });
+  const byLang = new Map(bundles.map((bundle) => [bundle.lang, bundle]));
+  return order.map(
+    (lang) => byLang.get(lang) ?? { lang, page: {}, schema: {} }
+  );
 }
 
 export class BaklibI18nHoverProvider implements vscode.HoverProvider {
@@ -43,16 +47,18 @@ export class BaklibI18nHoverProvider implements vscode.HoverProvider {
       config.get<string>('themeRoot')
     );
     if (!themeRoot) {
-      return new vscode.Hover(
-        '未找到主题 `locales/` 目录。请打开含 locales 的主题文件夹，或配置 `baklibThemeI18nHover.themeRoot`。'
-      );
+      return undefined;
+    }
+
+    const themeLanguages = getThemeLanguages(themeRoot);
+    if (!themeLanguages.length) {
+      return undefined;
     }
 
     const localesPath = config.get<string>('localesPath', 'locales');
     const index = getLocaleIndex(themeRoot, localesPath);
     const showMissingOnly = config.get<boolean>('showMissingOnly', false);
     const maxLanguages = config.get<number>('maxLanguages', 20);
-    const languageOrder = config.get<string[]>('languageOrder', []);
 
     const lines: string[] = [
       `**locale 路径** \`${resolved.path}\``,
@@ -61,10 +67,10 @@ export class BaklibI18nHoverProvider implements vscode.HoverProvider {
       '',
     ];
 
-    const languages = sortLanguages(index.languages, languageOrder).slice(
-      0,
-      maxLanguages
-    );
+    const languages = languagesInSchemaOrder(
+      index.languages,
+      themeLanguages
+    ).slice(0, maxLanguages);
 
     for (const bundle of languages) {
       const obj = resolved.bucket === 'schema' ? bundle.schema : bundle.page;
@@ -75,10 +81,18 @@ export class BaklibI18nHoverProvider implements vscode.HoverProvider {
         continue;
       }
 
+      const fileUri = localeFileUri(
+        themeRoot,
+        localesPath,
+        bundle.lang,
+        resolved.bucket
+      );
+      const langLink = `[**${bundle.lang}**](${fileUri.toString()})`;
+
       lines.push(
         missing
-          ? `- **${bundle.lang}:** _(missing)_`
-          : `- **${bundle.lang}:** ${value}`
+          ? `- ${langLink}: _(missing)_`
+          : `- ${langLink}: ${value}`
       );
     }
 

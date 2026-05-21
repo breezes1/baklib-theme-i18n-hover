@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { BaklibI18nHoverProvider } from './hoverProvider';
 import { clearLocaleIndexCache } from './localeIndex';
+import { clearSettingsSchemaCache } from './settingsSchema';
 
 export function activate(context: vscode.ExtensionContext): void {
   const provider = new BaklibI18nHoverProvider();
@@ -12,19 +13,31 @@ export function activate(context: vscode.ExtensionContext): void {
     )
   );
 
-  const watcher = vscode.workspace.createFileSystemWatcher(
+  const invalidate = () => {
+    clearLocaleIndexCache();
+    clearSettingsSchemaCache();
+  };
+
+  const localeWatcher = vscode.workspace.createFileSystemWatcher(
     '**/locales/**/*.json'
   );
-  const invalidate = () => clearLocaleIndexCache();
-  watcher.onDidChange(invalidate);
-  watcher.onDidCreate(invalidate);
-  watcher.onDidDelete(invalidate);
-  context.subscriptions.push(watcher);
+  localeWatcher.onDidChange(invalidate);
+  localeWatcher.onDidCreate(invalidate);
+  localeWatcher.onDidDelete(invalidate);
+  context.subscriptions.push(localeWatcher);
+
+  const schemaWatcher = vscode.workspace.createFileSystemWatcher(
+    '**/config/settings_schema.json'
+  );
+  schemaWatcher.onDidChange(invalidate);
+  schemaWatcher.onDidCreate(invalidate);
+  schemaWatcher.onDidDelete(invalidate);
+  context.subscriptions.push(schemaWatcher);
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('baklibThemeI18nHover')) {
-        clearLocaleIndexCache();
+        invalidate();
       }
     })
   );
@@ -32,4 +45,5 @@ export function activate(context: vscode.ExtensionContext): void {
 
 export function deactivate(): void {
   clearLocaleIndexCache();
+  clearSettingsSchemaCache();
 }

@@ -50,7 +50,7 @@ code --install-extension baklib-theme-i18n-hover-0.1.0.vsix
 cursor --install-extension baklib-theme-i18n-hover-0.1.0.vsix
 ```
 
-安装后打开任意含 `locales/` 的 Baklib 主题目录即可使用。配置项见 [docs/CONFIGURATION.md](docs/CONFIGURATION.md)。
+安装后打开含 `config/settings_schema.json` 的 Baklib 主题目录即可使用。配置项见 [docs/CONFIGURATION.md](docs/CONFIGURATION.md)。
 
 ### 方式二：F5 调试（仅开发时）
 

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { hasSettingsSchema } from './settingsSchema';
 
 export function findThemeRoot(startFile: string, configRoot?: string): string | undefined {
   if (configRoot?.trim()) {
@@ -8,18 +9,14 @@ export function findThemeRoot(startFile: string, configRoot?: string): string | 
     const abs = path.isAbsolute(configRoot)
       ? configRoot
       : path.join(workspaceRoot, configRoot);
-    if (fs.existsSync(path.join(abs, 'locales'))) {
+    if (hasSettingsSchema(abs)) {
       return abs;
     }
   }
 
   let dir = path.dirname(startFile);
   while (dir !== path.dirname(dir)) {
-    const locales = path.join(dir, 'locales');
-    if (
-      fs.existsSync(locales) &&
-      fs.readdirSync(locales).some((file) => file.endsWith('.json'))
-    ) {
+    if (hasSettingsSchema(dir)) {
       return dir;
     }
     dir = path.dirname(dir);

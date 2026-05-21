@@ -8,8 +8,8 @@
 |----|------|------|------|
 | `baklibThemeI18nHover.enabled` | `boolean` | `true` | 关闭后不再注册 Hover |
 | `baklibThemeI18nHover.localesPath` | `string` | `"locales"` | 相对主题根目录的 locale 子路径 |
-| `baklibThemeI18nHover.themeRoot` | `string` | `""` | 强制指定主题根（绝对路径或相对工作区根）。空则自动向上查找含 `locales/` 的目录 |
-| `baklibThemeI18nHover.languageOrder` | `string[]` | `[]` | 悬停列表语言顺序。空则按语言代码字母序 |
+| `baklibThemeI18nHover.themeRoot` | `string` | `""` | 强制指定主题根（须含 `config/settings_schema.json`）。空则自动向上查找 |
+| `baklibThemeI18nHover.languageOrder` | `string[]` | `[]` | **已弃用**。语言顺序由 `settings_schema.json` 中 `theme_languages` 决定 |
 | `baklibThemeI18nHover.maxLanguages` | `number` | `20` | 单次 Hover 最多显示语言数 |
 | `baklibThemeI18nHover.showMissingOnly` | `boolean` | `false` | 为 `true` 时仅列出缺少译文的语言（调试用） |
 
@@ -73,13 +73,9 @@
 
 或继续依赖自动向上查找（打开 `themes/wiki/docs` 下文件时无需配置）。
 
-### 优先显示中文与英文
+### 语言显示顺序
 
-```json
-{
-  "baklibThemeI18nHover.languageOrder": ["zh-CN", "en", "ja", "ko", "de", "fr", "zh-TW"]
-}
-```
+在主题的 `config/settings_schema.json` 中配置 `theme_info.theme_languages`，悬停列表按其中 `value` 的顺序展示，与 baklib-theme-i18n-cli 一致。
 
 ### 排查未翻译语言
 
@@ -96,7 +92,11 @@
 ```typescript
 const config = vscode.workspace.getConfiguration('baklibThemeI18nHover');
 const enabled = config.get<boolean>('enabled', true);
-const languageOrder = config.get<string[]>('languageOrder', []);
+const themeLanguages = getThemeLanguages(themeRoot);
 ```
 
 `getConfiguration` 会自动合并用户 / 工作区 / 文件夹级设置。
+
+## 生效条件
+
+扩展仅在当前工作区能解析到含 **`config/settings_schema.json`** 的主题根时提供 Hover；且该文件中 `theme_info.theme_languages` 非空。否则不显示悬停面板（静默不生效）。

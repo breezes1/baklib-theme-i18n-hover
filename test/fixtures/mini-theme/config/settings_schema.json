@@ -1,0 +1,10 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "mini-theme",
+    "theme_languages": [
+      { "name": "中文简体", "value": "zh-CN" },
+      { "name": "English", "value": "en" }
+    ]
+  }
+]
