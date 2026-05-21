@@ -1,0 +1,16 @@
+{% comment %} 用于扩展 F5 调试的迷你主题 {% endcomment %}
+<h1>{{ "sample.title" | t }}</h1>
+
+{% schema %}
+{
+  "name": "t:schema.templates.sample.name",
+  "settings": [
+    {
+      "id": "title",
+      "type": "text",
+      "label": "t:schema.templates.sample.settings.title.label",
+      "default": "t:schema.templates.sample.settings.title.default"
+    }
+  ]
+}
+{% endschema %}

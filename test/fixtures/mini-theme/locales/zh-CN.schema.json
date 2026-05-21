@@ -1,0 +1,13 @@
+{
+  "templates": {
+    "sample": {
+      "name": "示例模板",
+      "settings": {
+        "title": {
+          "label": "标题字段",
+          "default": "默认标题"
+        }
+      }
+    }
+  }
+}

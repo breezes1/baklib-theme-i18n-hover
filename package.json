@@ -1,0 +1,89 @@
+{
+  "name": "baklib-theme-i18n-hover",
+  "displayName": "Baklib Theme i18n Hover",
+  "description": "悬停预览 Baklib 主题 t:schema.* 与 | t 翻译 key 在各语言 locales 中的译文",
+  "version": "0.1.0",
+  "publisher": "tanmer",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/breezes1/baklib-theme-i18n-hover"
+  },
+  "homepage": "https://github.com/breezes1/baklib-theme-i18n-hover",
+  "bugs": {
+    "url": "https://github.com/breezes1/baklib-theme-i18n-hover/issues"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "baklib",
+    "liquid",
+    "i18n",
+    "locale",
+    "translation",
+    "theme"
+  ],
+  "activationEvents": [
+    "onLanguage:liquid",
+    "onLanguage:json"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Baklib Theme i18n",
+      "properties": {
+        "baklibThemeI18nHover.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用 Baklib 主题 i18n 悬停翻译预览"
+        },
+        "baklibThemeI18nHover.localesPath": {
+          "type": "string",
+          "default": "locales",
+          "description": "locale 文件目录（相对主题根）"
+        },
+        "baklibThemeI18nHover.themeRoot": {
+          "type": "string",
+          "default": "",
+          "description": "主题根目录。留空则根据当前文件自动向上查找"
+        },
+        "baklibThemeI18nHover.languageOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "悬停时语言显示顺序，如 [\"zh-CN\", \"en\"]"
+        },
+        "baklibThemeI18nHover.maxLanguages": {
+          "type": "number",
+          "default": 20,
+          "minimum": 1,
+          "description": "悬停最多显示的语言数量"
+        },
+        "baklibThemeI18nHover.showMissingOnly": {
+          "type": "boolean",
+          "default": false,
+          "description": "仅显示缺少译文的语言"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "^5.4.0"
+  }
+}

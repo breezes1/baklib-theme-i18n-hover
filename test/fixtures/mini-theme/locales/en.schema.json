@@ -1,0 +1,13 @@
+{
+  "templates": {
+    "sample": {
+      "name": "Sample Template",
+      "settings": {
+        "title": {
+          "label": "Title field",
+          "default": "Default title"
+        }
+      }
+    }
+  }
+}
