@@ -1,9 +1,12 @@
 import * as vscode from 'vscode';
 import { BaklibI18nHoverProvider } from './hoverProvider';
 import { clearLocaleIndexCache } from './localeIndex';
+import { registerOpenLocaleKeyCommand } from './openLocaleKey';
 import { clearSettingsSchemaCache } from './settingsSchema';
 
 export function activate(context: vscode.ExtensionContext): void {
+  registerOpenLocaleKeyCommand(context);
+
   const provider = new BaklibI18nHoverProvider();
 
   context.subscriptions.push(

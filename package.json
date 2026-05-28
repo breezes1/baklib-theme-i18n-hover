@@ -2,7 +2,7 @@
   "name": "baklib-theme-i18n-hover",
   "displayName": "Baklib Theme i18n Hover",
   "description": "悬停预览 Baklib 主题 t:schema.* 与 | t 翻译 key 在各语言 locales 中的译文",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "publisher": "tanmer",
   "license": "MIT",
   "repository": {
@@ -33,6 +33,13 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "baklibThemeI18nHover.openLocaleKey",
+        "title": "Open locale key",
+        "enablement": "false"
+      }
+    ],
     "configuration": {
       "title": "Baklib Theme i18n",
       "properties": {
@@ -50,14 +57,6 @@
           "type": "string",
           "default": "",
           "description": "主题根目录（须含 config/settings_schema.json）。留空则根据当前文件自动向上查找"
-        },
-        "baklibThemeI18nHover.languageOrder": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [],
-          "markdownDescription": "已弃用：语言顺序改由 `config/settings_schema.json` 的 `theme_languages` 决定。"
         },
         "baklibThemeI18nHover.maxLanguages": {
           "type": "number",

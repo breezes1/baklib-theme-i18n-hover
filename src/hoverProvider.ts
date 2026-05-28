@@ -1,21 +1,10 @@
-import * as path from 'path';
 import * as vscode from 'vscode';
 import { getByPath } from './jsonPath';
 import { getLocaleIndex, LanguageBundle } from './localeIndex';
-import { I18nBucket, resolveKeyAtPosition } from './keyResolver';
+import { resolveKeyAtPosition } from './keyResolver';
+import { buildLocaleFileMarkdownLink } from './localePaths';
 import { getThemeLanguages } from './settingsSchema';
 import { findThemeRoot } from './themeRoot';
-
-function localeFileUri(
-  themeRoot: string,
-  localesPath: string,
-  lang: string,
-  bucket: I18nBucket
-): vscode.Uri {
-  const filename =
-    bucket === 'schema' ? `${lang}.schema.json` : `${lang}.json`;
-  return vscode.Uri.file(path.join(themeRoot, localesPath, filename));
-}
 
 function languagesInSchemaOrder(
   bundles: LanguageBundle[],
@@ -60,18 +49,26 @@ export class BaklibI18nHoverProvider implements vscode.HoverProvider {
     const showMissingOnly = config.get<boolean>('showMissingOnly', false);
     const maxLanguages = config.get<number>('maxLanguages', 20);
 
-    const lines: string[] = [
-      `**locale 路径** \`${resolved.path}\``,
-      `**CLI key** \`${resolved.fullKey}\``,
-      `**文件** ${resolved.bucket === 'schema' ? '`*.schema.json`' : '`*.json`'}`,
-      '',
-    ];
+    const markdown = new vscode.MarkdownString();
+    // file:// 链接需受信任；译文用 appendText 转义，避免注入
+    markdown.isTrusted = true;
+    markdown.supportHtml = false;
+
+    markdown.appendMarkdown(
+      [
+        `**locale 路径** \`${resolved.path}\``,
+        `**CLI key** \`${resolved.fullKey}\``,
+        `**文件** ${resolved.bucket === 'schema' ? '`*.schema.json`' : '`*.json`'}`,
+        '',
+      ].join('\n')
+    );
 
     const languages = languagesInSchemaOrder(
       index.languages,
       themeLanguages
     ).slice(0, maxLanguages);
 
+    let languageLines = 0;
     for (const bundle of languages) {
       const obj = resolved.bucket === 'schema' ? bundle.schema : bundle.page;
       const value = getByPath(obj, resolved.path);
@@ -81,27 +78,30 @@ export class BaklibI18nHoverProvider implements vscode.HoverProvider {
         continue;
       }
 
-      const fileUri = localeFileUri(
-        themeRoot,
-        localesPath,
-        bundle.lang,
-        resolved.bucket
+      languageLines += 1;
+      markdown.appendMarkdown('- ');
+      markdown.appendMarkdown(
+        buildLocaleFileMarkdownLink({
+          themeRoot,
+          localesPath,
+          lang: bundle.lang,
+          bucket: resolved.bucket,
+          jsonPath: resolved.path,
+        })
       );
-      const langLink = `[**${bundle.lang}**](${fileUri.toString()})`;
-
-      lines.push(
-        missing
-          ? `- ${langLink}: _(missing)_`
-          : `- ${langLink}: ${value}`
-      );
+      if (missing) {
+        markdown.appendMarkdown(': _(missing)_\n');
+      } else {
+        markdown.appendMarkdown(': ');
+        markdown.appendText(String(value));
+        markdown.appendMarkdown('\n');
+      }
     }
 
-    if (lines.length === 2) {
-      lines.push('_（无匹配语言或均已翻译）_');
+    if (languageLines === 0) {
+      markdown.appendMarkdown('_（无匹配语言或均已翻译）_\n');
     }
 
-    const markdown = new vscode.MarkdownString(lines.join('\n'));
-    markdown.isTrusted = true;
     return new vscode.Hover(markdown, resolved.range);
   }
 }
